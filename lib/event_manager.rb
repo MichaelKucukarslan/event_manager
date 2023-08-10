@@ -32,18 +32,34 @@ def legislators_by_zipcode(zipcode)
     end
 end
 
+def save_form_letter(id, form_letter)
+    Dir.mkdir('output') unless Dir.exist?('output')
+    filename = "output/thanks_#{id}.html"
+    File.open(filename, 'w') do |file|
+        file.puts form_letter
+    end
+end
+
+def clean_phone_number (phone_number)
+    number = phone_number.delete("^0-9")
+    if number.length == 10
+        number
+    elsif number.length == 11 && number[0] == "1"
+        number[1..10]
+    else
+        "Invalid Number"
+    end
+end
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
 contents.each do |row|
     id = row[0]
     name = row[:first_name]
     zipcode = clean_zipcode(row[:zipcode])
-    legislators = legislators_by_zipcode(zipcode)
+    # legislators = legislators_by_zipcode(zipcode)
     
-    form_letter = erb_template.result(binding)
-    Dir.mkdir('output') unless Dir.exist?('output')
-    filename = "output/thanks_#{id}.html"
-    File.open(filename, 'w') do |file|
-        file.puts form_letter
-    end
+    phone_number = clean_phone_number(row[:homephone])
+    puts phone_number
+    # form_letter = erb_template.result(binding)
+    # save_form_letter(id, form_letter) 
 end
