@@ -1,6 +1,6 @@
 require 'csv'
 require 'google/apis/civicinfo_v2'
-
+require 'erb'
 
 puts 'Event Manager Initialized!'
 # Use the CSV Library
@@ -32,19 +32,18 @@ def legislators_by_zipcode(zipcode)
     end
 end
 
+template_letter = File.read('form_letter.erb')
+erb_template = ERB.new template_letter
 contents.each do |row|
+    id = row[0]
     name = row[:first_name]
     zipcode = clean_zipcode(row[:zipcode])
     legislators = legislators_by_zipcode(zipcode)
     
-    puts "#{name} #{zipcode} #{legislators}"
+    form_letter = erb_template.result(binding)
+    Dir.mkdir('output') unless Dir.exist?('output')
+    filename = "output/thanks_#{id}.html"
+    File.open(filename, 'w') do |file|
+        file.puts form_letter
+    end
 end
-
-# Read the file 
-# lines = File.readlines('event_attendees.csv')
-# lines.each_with_index do |line, index|
-#     next if index == 0 # skips the first row
-#     columns = line.split(",")
-#     name = columns[2]
-#     puts name
-# end
